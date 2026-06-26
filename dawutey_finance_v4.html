@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dawutey Clothing — Finance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f9f7f4;--bg2:#ffffff;--bg3:#f3f0ec;--bg4:#ede9e3;
+  --border:rgba(180,140,80,.18);--border2:rgba(180,140,80,.32);
+  --gold:#b8872a;--gold-l:#c9982e;--gold-p:rgba(184,135,42,.08);--gold-s:rgba(184,135,42,.2);
+  --text:#1a1612;--text2:rgba(26,22,18,.60);--text3:rgba(26,22,18,.38);
+  --green:#1a7a3c;--green-p:rgba(26,122,60,.08);--green-s:rgba(26,122,60,.18);
+  --red:#c0392b;--red-p:rgba(192,57,43,.07);--red-s:rgba(192,57,43,.16);
+  --amber:#b5620a;--amber-p:rgba(181,98,10,.08);
+  --surf:rgba(0,0,0,.03);--surf2:rgba(0,0,0,.06);
+  --fd:'Cormorant Garamond',serif;--fb:'DM Sans',sans-serif;
+  --ease:all .22s cubic-bezier(.4,0,.2,1);
+  --radius:2px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:13.5px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 100% 0%,rgba(184,135,42,.04) 0%,transparent 60%);pointer-events:none;z-index:0}
+.shell{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sb{width:234px;min-height:100vh;position:fixed;top:0;left:0;bottom:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s}
+.sb::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4}
+.sb-top{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.brand-logo{height:52px;object-fit:contain;object-position:left;max-width:180px;display:block;margin-bottom:10px}
+.brand-fallback{display:none;width:48px;height:48px;border:1px solid var(--gold);background:var(--gold-p);align-items:center;justify-content:center;margin-bottom:10px}
+.brand-fallback span{font-family:var(--fd);font-size:22px;font-weight:600;color:var(--gold);font-style:italic}
+.bsub{font-size:8px;color:var(--gold);text-transform:uppercase;letter-spacing:.22em;margin-top:2px;opacity:.8}
+.nav{padding:12px 10px;flex:1;overflow-y:auto}
+.ns{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.22em;padding:0 10px;margin:14px 0 4px}
+.nb{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:none;background:none;color:var(--text3);font-family:var(--fb);font-size:12.5px;font-weight:400;cursor:pointer;transition:var(--ease);text-align:left;border-left:2px solid transparent;margin-bottom:1px;border-radius:0 var(--radius) var(--radius) 0}
+.nb:hover{color:var(--text);background:var(--surf)}
+.nb.active{color:var(--gold);background:var(--gold-p);border-left-color:var(--gold)}
+.nb svg{width:14px;height:14px;flex-shrink:0;opacity:.8}
+.sb-foot{padding:12px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text3)}
+.sb-foot strong{color:var(--gold)}
+
+/* ── SYNC STATUS ── */
+.sync-bar{display:flex;align-items:center;gap:8px;padding:8px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text3)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .4s}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.err{background:var(--red)}
+.sync-dot.loading{background:var(--amber);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── MAIN ── */
+.main{margin-left:234px;flex:1}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(249,247,244,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:56px;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+.tb-title{font-family:var(--fd);font-size:20px;font-weight:300;font-style:italic;color:var(--gold-l);letter-spacing:.04em}
+.tb-right{display:flex;align-items:center;gap:8px}
+.content{padding:24px}
+
+/* ── VIEWS ── */
+.view{display:none}.view.active{display:block}
+
+/* ── CHIPS ── */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:var(--radius)}
+.c-gold{background:var(--gold-p);color:var(--gold);border:1px solid var(--gold-s)}
+.c-green{background:var(--green-p);color:var(--green);border:1px solid var(--green-s)}
+.c-red{background:var(--red-p);color:var(--red);border:1px solid var(--red-s)}
+.c-muted{background:var(--surf);color:var(--text2);border:1px solid var(--border)}
+.c-amber{background:var(--amber-p);color:var(--amber);border:1px solid rgba(251,191,36,.26)}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);padding:22px;position:relative;overflow:hidden;border-radius:var(--radius)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,160,74,.18),transparent);opacity:0;transition:opacity .3s}
+.card:hover::before{opacity:1}
+.ch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.ct{font-family:var(--fd);font-size:16px;font-weight:600;color:var(--text);letter-spacing:.02em}
+.cs{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.g-6040{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+.mb3{margin-bottom:16px}.mb4{margin-bottom:22px}
+
+/* ── KPI ── */
+.kpi{background:var(--bg2);border:1px solid var(--border);padding:20px;position:relative;overflow:hidden;border-radius:var(--radius)}
+.kpi::after{content:'';position:absolute;bottom:-14px;right:-14px;width:60px;height:60px;background:radial-gradient(circle,var(--gold-p),transparent);border-radius:50%}
+.kl{font-size:9px;text-transform:uppercase;letter-spacing:.16em;color:var(--text3);margin-bottom:8px}
+.kv{font-family:var(--fd);font-size:26px;font-weight:600;color:var(--text);line-height:1;margin-bottom:5px}
+.ks{font-size:11px;color:var(--text3)}
+
+/* ── STAT ROWS ── */
+.sr{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.sr:last-child{border-bottom:none;padding-bottom:0}
+.sl{font-size:12.5px;color:var(--text2)}
+.sv{font-size:13px;font-weight:500;color:var(--text)}
+.sv.gold{color:var(--gold)}.sv.green{color:var(--green)}.sv.red{color:var(--red)}.sv.amber{color:var(--amber)}
+
+/* ── PROGRESS ── */
+.pw{background:rgba(0,0,0,.08);height:5px;overflow:hidden;border-radius:3px}
+.pb{height:100%;background:var(--gold);transition:width .9s cubic-bezier(.4,0,.2,1);border-radius:3px}
+.pb.green{background:var(--green)}.pb.red{background:var(--red)}
+
+/* ── SECTION HDR ── */
+.sec{font-family:var(--fd);font-size:13px;font-style:italic;color:var(--text3);letter-spacing:.06em;display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── ORN ── */
+.orn{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text3);font-size:10px;letter-spacing:.15em;text-transform:uppercase}
+.orn::before,.orn::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── FORM ── */
+.fr{display:grid;gap:12px;margin-bottom:12px}
+.fr.c2{grid-template-columns:1fr 1fr}.fr.c3{grid-template-columns:1fr 1fr 1fr}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);font-weight:600}
+.fld input,.fld select{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--fb);font-size:13px;padding:9px 11px;outline:none;transition:var(--ease);width:100%;border-radius:var(--radius)}
+.fld input:focus,.fld select:focus{border-color:var(--gold);background:var(--bg4);box-shadow:0 0 0 3px var(--gold-p)}
+.fld select option{background:var(--bg2);color:var(--text)}
+.fld input::placeholder{color:var(--text3)}
+.hint{font-size:10px;color:var(--text3)}.hint.good{color:var(--green)}.hint.warn{color:var(--amber)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;font-family:var(--fb);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:none;transition:var(--ease);border-radius:var(--radius)}
+.btn-gold{background:var(--gold);color:var(--bg)}
+.btn-gold:hover{background:var(--gold-l);transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,160,74,.22)}
+.btn-ghost{background:var(--surf);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surf2)}
+.btn-sm{padding:5px 12px;font-size:10px}
+.btn-red{background:var(--red-p);color:var(--red);border:1px solid var(--red-s)}
+.btn-red:hover{background:var(--red-s)}
+.btn-green{background:var(--green-p);color:var(--green);border:1px solid var(--green-s)}
+.btn-green:hover{background:var(--green-s)}
+
+/* ── RESULT BOX ── */
+.rbox{padding:20px;text-align:center;margin-top:14px;border:1px solid var(--border);background:var(--bg3);border-radius:var(--radius)}
+.rbox.profit{border-color:var(--green-s);background:var(--green-p)}
+.rbox.loss{border-color:var(--red-s);background:var(--red-p)}
+.rbox.warn{border-color:rgba(251,191,36,.26);background:var(--amber-p)}
+.rv{font-size:9px;text-transform:uppercase;letter-spacing:.16em;color:var(--text3);margin-bottom:6px}
+.ra{font-family:var(--fd);font-size:36px;font-weight:600;line-height:1}
+.rm{font-size:12px;margin-top:7px}
+
+/* ── ALERT ── */
+.al{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;font-size:12.5px;margin-bottom:10px;border-left:2px solid;border-radius:0 var(--radius) var(--radius) 0}
+.al:last-child{margin-bottom:0}
+.al.gold{background:var(--gold-p);border-color:var(--gold);color:var(--gold)}
+.al.red{background:var(--red-p);border-color:var(--red);color:var(--red)}
+.al.green{background:var(--green-p);border-color:var(--green);color:var(--green)}
+.al.amber{background:var(--amber-p);border-color:var(--amber);color:var(--amber)}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl thead tr{border-bottom:1px solid var(--border)}
+.tbl th{padding:8px 10px;text-align:left;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+.tbl td{padding:8px 10px;border-bottom:1px solid rgba(0,0,0,.05);vertical-align:middle}
+.tbl tbody tr:hover{background:var(--surf)}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl tfoot td{padding:11px 10px;border-top:1px solid var(--border);background:rgba(212,160,74,.04);font-weight:600}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;align-items:center;padding:2px 7px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border:1px solid;border-radius:var(--radius)}
+.t-done{color:var(--green);border-color:var(--green-s);background:var(--green-p)}
+.t-prog{color:var(--gold);border-color:var(--gold-s);background:var(--gold-p)}
+.t-paid{color:#0e6f7a;border-color:rgba(14,111,122,.26);background:rgba(14,111,122,.07)}
+.t-pend{color:var(--text3);border-color:var(--border)}
+
+/* ── BAR CHART ── */
+.bar-wrap{display:flex;align-items:flex-end;gap:7px;height:160px;padding:0 2px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end;position:relative}
+.bar-col:hover .btt{display:block}
+.btt{display:none;position:absolute;bottom:105%;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);padding:5px 9px;font-size:11px;white-space:nowrap;color:var(--text);z-index:10}
+.bar-rect{width:100%;border-radius:2px 2px 0 0;min-height:3px;transition:height .7s cubic-bezier(.4,0,.2,1)}
+.bar-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+.bar-val{font-size:10px;font-weight:600}
+
+/* ── RTW ── */
+.rtw-price{font-family:var(--fd);font-size:44px;font-weight:600;color:var(--gold);line-height:1}
+
+/* ── BE CARDS ── */
+.be-c{background:var(--bg2);border:1px solid var(--border);padding:20px;border-radius:var(--radius)}
+.be-n{font-family:var(--fd);font-size:42px;font-weight:600;color:var(--gold);line-height:1}
+.be-u{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:36px;color:var(--text3);font-family:var(--fd);font-style:italic;font-size:15px}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(26,22,18,.5);z-index:500;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);padding:26px;width:400px;max-width:95vw;position:relative;border-radius:var(--radius)}
+.modal-title{font-family:var(--fd);font-size:18px;font-weight:600;color:var(--gold);margin-bottom:18px}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--text)}
+
+/* ── SETTINGS GRID ── */
+.monthly-targets-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
+.mt-cell{background:var(--bg3);border:1px solid var(--border);padding:10px}
+.mt-cell label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:5px}
+.mt-cell input{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--gold);font-family:var(--fd);font-size:17px;width:100%;outline:none;padding:2px 0}
+
+/* ── ANIMATIONS ── */
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.a1{animation:up .35s ease both}.a2{animation:up .35s ease .08s both}
+.a3{animation:up .35s ease .16s both}.a4{animation:up .35s ease .24s both}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg3)}
+::-webkit-scrollbar-thumb{background:var(--gold-s);border-radius:2px}
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.loading-overlay.hidden{display:none}
+.load-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-text{font-family:var(--fd);font-size:15px;font-style:italic;color:var(--text3)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sb{transform:translateX(-100%)}
+  .sb.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .g2,.g3,.g4,.g-6040{grid-template-columns:1fr}
+  .fr.c2,.fr.c3{grid-template-columns:1fr}
+  .monthly-targets-grid{grid-template-columns:repeat(3,1fr)}
+  .mob-menu{display:flex!important}
+}
+.mob-menu{display:none;background:none;border:none;color:var(--gold);cursor:pointer;padding:4px}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div class="loading-overlay" id="loading">
+  <div class="load-spinner"></div>
+  <div class="load-text">Connecting to Google Sheets…</div>
+</div>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sb" id="sidebar">
+  <div class="sb-top">
+    <img class="brand-logo" id="brand-logo" src="https://dawuteyclothing.com/logo.png" alt="Dawutey Clothing" onerror="this.style.display='none';document.querySelector('.brand-fallback').style.display='flex'"/>
+    <div class="brand-fallback" style="display:none"><span>D</span></div>
+    <div class="bsub">Finance Dashboard</div>
+  </div>
+  <nav class="nav">
+    <div class="ns">Overview</div>
+    <button class="nb active" onclick="go('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Monthly Summary
+    </button>
+    <button class="nb" onclick="go('yearly',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Yearly Profit
+    </button>
+    <div class="ns">Tools</div>
+    <button class="nb" onclick="go('calc',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Order Calculator
+    </button>
+    <button class="nb" onclick="go('rtw',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>
+      Ready-to-Wear
+    </button>
+    <div class="ns">Settings</div>
+    <button class="nb" onclick="go('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Fixed Costs & Targets
+    </button>
+    <div class="ns">Records</div>
+    <button class="nb" onclick="go('orders',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Order Log
+    </button>
+    <button class="nb" onclick="go('breakeven',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+      Break-Even
+    </button>
+  </nav>
+  <div class="sb-foot">
+    <strong id="sb-month">June 2026</strong><br>
+    <strong id="ft-orders">0 orders</strong> · <strong id="ft-rev">—</strong>
+  </div>
+  <div class="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Not connected</span>
+    <button class="btn btn-sm btn-ghost" onclick="syncAll()" style="margin-left:auto;padding:3px 8px;font-size:9px" id="sync-btn">↻ Sync</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="mob-menu" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="tb-title">Dawutey Clothing</div>
+    </div>
+    <div class="tb-right">
+      <span class="chip c-gold" id="hdr-month">June 2026</span>
+      <span class="chip c-muted" id="hdr-orders">0 orders</span>
+      <button class="btn btn-gold" onclick="go('calc',document.querySelectorAll('.nb')[2])">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Evaluate Order
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="view active" id="view-overview">
+      <div class="g4 mb4">
+        <div class="kpi a1"><div class="kl">Revenue</div><div class="kv" id="kpi-rev">—</div><div class="ks">Labour charges (active orders)</div></div>
+        <div class="kpi a2"><div class="kl">Net Profit</div><div class="kv" id="kpi-profit">—</div><div class="ks">After supplies + fixed costs</div></div>
+        <div class="kpi a3"><div class="kl">Avg per Order</div><div class="kv" id="kpi-avg">—</div><div class="ks">Average charge per active order</div></div>
+        <div class="kpi a4"><div class="kl">Supplies Spent</div><div class="kv" id="kpi-cost">—</div><div class="ks" id="kpi-cost-s">GHS 20 per order</div></div>
+      </div>
+      <div class="g-6040 mb3">
+        <div class="card a1">
+          <div class="ch"><div><div class="ct" id="pl-title">Monthly P&L</div><div class="cs">Pending orders excluded from P&L</div></div></div>
+          <div id="pl-body"></div>
+        </div>
+        <div>
+          <div class="card a2 mb3">
+            <div class="ch"><div><div class="ct">Monthly Target</div><div class="cs" id="tgt-num">—</div></div><div><span id="tgt-pct" class="chip c-gold">0%</span></div></div>
+            <div class="pw mb3"><div class="pb" id="tgt-bar" style="width:0%"></div></div>
+            <div id="tgt-rows"></div>
+          </div>
+          <div class="card a3">
+            <div class="ch"><div><div class="ct">Business Health</div></div></div>
+            <div id="health"></div>
+          </div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card a2"><div class="ch"><div><div class="ct">Cash Flow Snapshot</div></div></div><div id="insights"></div></div>
+        <div class="card a3"><div class="ch"><div><div class="ct">What If? Orders → Profit</div></div></div><div id="what-if"></div></div>
+      </div>
+    </div>
+
+    <!-- YEARLY -->
+    <div class="view" id="view-yearly">
+      <div class="sec">2026 — Year at a Glance</div>
+      <div class="card a1 mb3">
+        <div class="ch"><div><div class="ct">Monthly Net Profit</div><div class="cs">Bars = net profit after all costs</div></div><div id="yr-chips"></div></div>
+        <div class="bar-wrap" id="yr-bars"></div>
+      </div>
+      <div class="g3">
+        <div class="card a2"><div class="ch"><div><div class="ct">YTD Revenue</div></div></div><div class="kv" id="yr-rev" style="font-family:var(--fd);font-size:28px">—</div></div>
+        <div class="card a3"><div class="ch"><div><div class="ct">YTD Net Profit</div></div></div><div class="kv" id="yr-net" style="font-family:var(--fd);font-size:28px">—</div></div>
+        <div class="card a4"><div class="ch"><div><div class="ct">Best Month</div></div></div><div class="kv" id="yr-best" style="font-family:var(--fd);font-size:28px">—</div></div>
+      </div>
+    </div>
+
+    <!-- ORDER CALCULATOR -->
+    <div class="view" id="view-calc">
+      <div class="sec">Order Profitability Calculator</div>
+      <div class="g-6040">
+        <div class="card a1">
+          <div class="ch"><div><div class="ct">Order Details</div></div></div>
+          <div class="fr c2">
+            <div class="fld"><label>Fabric Cost (GHS)</label><input type="number" id="c-fabric" value="0" step="1" oninput="calcOrder()"/></div>
+            <div class="fld"><label>Lining &amp; Zip (GHS)</label><input type="number" id="c-zip" value="0" step="1" oninput="calcOrder()"/></div>
+          </div>
+          <div class="fr c2">
+            <div class="fld"><label>Thread &amp; Buttons (GHS)</label><input type="number" id="c-thread" value="0" step="1" oninput="calcOrder()"/></div>
+            <div class="fld"><label>Other Supplies (GHS)</label><input type="number" id="c-other" value="0" step="1" oninput="calcOrder()"/></div>
+          </div>
+          <div class="fr c2">
+            <div class="fld"><label>Labour Hours</label><input type="number" id="c-hours" value="4" step=".5" min="0" oninput="calcOrder()"/></div>
+            <div class="fld"><label>Your Hourly Rate (GHS)</label><input type="number" id="c-rate" value="25" step="5" min="0" oninput="calcOrder()"/></div>
+          </div>
+          <div class="fr c2">
+            <div class="fld"><label>Order Type</label>
+              <select id="c-type" onchange="calcOrder()">
+                <option value="0">Custom Dress</option>
+                <option value="20">Express (+GHS 20)</option>
+                <option value="-10">Alteration (-10%)</option>
+              </select>
+            </div>
+            <div class="fld"><label>Overhead Allocation %</label><input type="number" id="c-oh" value="15" step="5" min="0" max="40" oninput="calcOrder()"/></div>
+          </div>
+        </div>
+        <div>
+          <div class="card a2 mb3"><div class="ch"><div><div class="ct">Profit Breakdown</div></div></div><div id="calc-res"><div class="empty">Fill in costs to see breakdown.</div></div></div>
+          <div class="card a3"><div class="ch"><div><div class="ct">Suggested Pricing</div></div></div><div id="calc-price"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- READY-TO-WEAR -->
+    <div class="view" id="view-rtw">
+      <div class="sec">Ready-to-Wear Pricing</div>
+      <div class="g-6040">
+        <div class="card a1">
+          <div class="ch"><div><div class="ct">RTW Cost Inputs</div></div></div>
+          <div class="fr c2">
+            <div class="fld"><label>Fabric per Dress (GHS)</label><input type="number" id="r-fabric" value="60" step="5" oninput="calcRTW()"/></div>
+            <div class="fld"><label>Labour per Dress (GHS)</label><input type="number" id="r-labour" value="40" step="5" oninput="calcRTW()"/></div>
+          </div>
+          <div class="fr c2">
+            <div class="fld"><label>Other Supplies (GHS)</label><input type="number" id="r-supplies" value="10" step="5" oninput="calcRTW()"/></div>
+            <div class="fld"><label>Packaging (GHS)</label><input type="number" id="r-pkg" value="5" step="1" oninput="calcRTW()"/></div>
+          </div>
+          <div class="fr c2">
+            <div class="fld"><label>Delivery / Transport (GHS)</label><input type="number" id="r-delivery" value="10" step="5" oninput="calcRTW()"/></div>
+            <div class="fld"><label>Target Profit Margin %</label>
+              <select id="r-margin" onchange="calcRTW()">
+                <option value="30">30% — Starter</option>
+                <option value="40" selected>40% — Recommended</option>
+                <option value="50">50% — Premium</option>
+                <option value="60">60% — Luxury</option>
+              </select>
+            </div>
+          </div>
+          <div class="fr c2">
+            <div class="fld"><label>Batch Size (dresses per run)</label><input type="number" id="r-batch" value="10" step="5" min="1" oninput="calcRTW()"/></div>
+            <div class="fld"><label>Commission % (if using agent)</label><input type="number" id="r-comm" value="0" step="5" min="0" max="30" oninput="calcRTW()"/></div>
+          </div>
+          <div class="al gold" style="margin-top:4px"><span>💡</span><span>10% buffer for unsold stock is built in automatically.</span></div>
+        </div>
+        <div>
+          <div class="card a2 mb3"><div class="ch"><div><div class="ct">Your Selling Price</div></div></div><div id="rtw-res"><div class="empty">Fill in costs to get your price.</div></div></div>
+          <div class="card a3">
+            <div class="ch"><div><div class="ct">Accra Market Positioning</div></div></div>
+            <div class="sr"><span class="sl">Budget</span><span class="sv" style="color:var(--text3)">GHS 120 – 200</span></div>
+            <div class="sr"><span class="sl">Mid-range</span><span class="sv amber">GHS 200 – 280</span></div>
+            <div class="sr"><span class="sl">Corporate / quality</span><span class="sv gold">GHS 280 – 380</span></div>
+            <div class="sr"><span class="sl">Premium brand</span><span class="sv green">GHS 380 – 500+</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view" id="view-settings">
+      <div class="sec">Fixed Costs & Monthly Targets</div>
+      <div class="al gold a1 mb3"><span>⚙</span><span>Changes here update the entire dashboard. All settings are saved to Google Sheets automatically.</span></div>
+      <div class="g2 mb3">
+        <div class="card a1">
+          <div class="ch"><div><div class="ct">Fixed Monthly Costs</div><div class="cs">Deducted from gross profit every month</div></div></div>
+          <div id="fc-list"></div>
+          <div class="orn">add new cost</div>
+          <div class="fr c2" style="margin-bottom:8px">
+            <div class="fld"><label>Cost Name</label><input type="text" id="fc-name" placeholder="e.g. Rent"/></div>
+            <div class="fld"><label>Amount (GHS/month)</label><input type="number" id="fc-amt" step="1" min="0" placeholder="200"/></div>
+          </div>
+          <button class="btn btn-gold" onclick="addFixedCost()" style="width:100%">Add Fixed Cost</button>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+            <div class="sr"><span class="sl" style="color:var(--text);font-weight:600">Total Fixed Costs</span><span class="sv gold" id="fc-total" style="font-family:var(--fd);font-size:18px">—</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="card a2 mb3">
+            <div class="ch"><div><div class="ct">Variable Cost Default</div><div class="cs">Supplies cost per new order</div></div></div>
+            <div class="fr" style="margin-bottom:8px">
+              <div class="fld"><label>Supplies per Order (GHS)</label><input type="number" id="s-spo" step="1" min="0" oninput="saveSetting('SPO',this.value)"/><div class="hint">Thread, zip, buttons, lining per dress</div></div>
+            </div>
+            <div class="fr">
+              <div class="fld"><label>Average Order Value (GHS)</label><input type="number" id="s-avg" step="1" min="0" oninput="saveSetting('AVG_ORDER',this.value)"/><div class="hint">Used for what-if projections</div></div>
+            </div>
+          </div>
+          <div class="card a3">
+            <div class="ch"><div><div class="ct">Owner Pay Target</div><div class="cs">What you want to pay yourself monthly</div></div></div>
+            <div class="fld"><label>Monthly Pay Target (GHS)</label><input type="number" id="s-pay" step="100" min="0" oninput="saveSetting('OWNER_PAY',this.value)"/><div class="hint">Used in break-even calculation</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card a3">
+        <div class="ch"><div><div class="ct">Monthly Profit Targets — 2026</div><div class="cs">Set a different target for each month.</div></div></div>
+        <div class="monthly-targets-grid" id="monthly-targets-grid"></div>
+        <button class="btn btn-gold" onclick="saveMonthlyTargets()" style="margin-top:14px" id="save-targets-btn">Save All Targets</button>
+      </div>
+    </div>
+
+    <!-- ORDER LOG -->
+    <div class="view" id="view-orders">
+      <div class="sec">Order Log</div>
+      <div class="card a1 mb3">
+        <div class="ch"><div><div class="ct">Log an Order</div><div class="cs">Record every order as it comes in</div></div></div>
+        <div class="fr c3">
+          <div class="fld"><label>Client Name</label><input type="text" id="o-name" placeholder="e.g. Akosua Mensah"/></div>
+          <div class="fld"><label>Type</label>
+            <select id="o-type">
+              <option value="Custom">Custom Dress</option>
+              <option value="Alteration">Alteration</option>
+              <option value="Express">Express</option>
+            </select>
+          </div>
+          <div class="fld"><label>Labour Charge (GHS)</label><input type="number" id="o-price" step="1" min="0" placeholder="150"/></div>
+        </div>
+        <div class="fr c3">
+          <div class="fld"><label>Supplies Cost (GHS)</label><input type="number" id="o-cost" step="1" min="0"/></div>
+          <div class="fld"><label>Status</label>
+            <select id="o-status">
+              <option value="pending">Pending</option>
+              <option value="progress">In Progress</option>
+              <option value="done">Completed</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+          <div class="fld" style="justify-content:flex-end"><label style="opacity:0">x</label>
+            <button class="btn btn-gold" onclick="addOrder()" style="width:100%" id="add-order-btn">+ Add Order</button>
+          </div>
+        </div>
+      </div>
+      <div class="card a2">
+        <div class="ch">
+          <div><div class="ct">All Orders</div><div class="cs" id="ord-sub">No orders yet</div></div>
+          <div style="display:flex;gap:7px" id="ord-chips"></div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Client</th><th>Type</th><th style="text-align:right">Charge</th><th style="text-align:right">Supplies</th><th style="text-align:right">Profit</th><th>Status</th><th>Date</th><th></th></tr></thead>
+            <tbody id="ord-body"></tbody>
+            <tfoot id="ord-foot"></tfoot>
+          </table>
+        </div>
+        <div id="ord-empty" class="empty">No orders yet. Add your first order above.</div>
+      </div>
+    </div>
+
+    <!-- BREAK-EVEN -->
+    <div class="view" id="view-breakeven">
+      <div class="sec">Break-Even Analysis</div>
+      <div class="g3 mb3">
+        <div class="be-c a1"><div class="kl">Survival Only</div><div class="be-n" id="be1">—</div><div class="be-u">orders/month · excl. your pay</div></div>
+        <div class="be-c a2" style="border-color:var(--gold-s)"><div class="kl">Full Break-Even</div><div class="be-n" id="be2">—</div><div class="be-u" id="be2-u">orders/month · incl. pay target</div></div>
+        <div class="be-c a3"><div class="kl">Hit Monthly Target</div><div class="be-n" id="be3">—</div><div class="be-u" id="be3-u">orders/month</div></div>
+      </div>
+      <div class="g2">
+        <div class="card a2"><div class="ch"><div class="ct">Cost Structure</div></div><div id="be-costs"></div></div>
+        <div class="card a3"><div class="ch"><div class="ct">What Each Extra Order Adds</div></div><div id="be-growth"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main><!-- /main -->
+</div><!-- /shell -->
+
+<!-- EDIT ORDER MODAL -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEdit()">✕</button>
+    <div class="modal-title">Edit Order</div>
+    <input type="hidden" id="edit-id"/>
+    <div class="fr c2" style="margin-bottom:12px">
+      <div class="fld"><label>Client Name</label><input type="text" id="edit-client"/></div>
+      <div class="fld"><label>Type</label>
+        <select id="edit-type">
+          <option value="Custom">Custom Dress</option>
+          <option value="Alteration">Alteration</option>
+          <option value="Express">Express</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr c2" style="margin-bottom:12px">
+      <div class="fld"><label>Labour Charge (GHS)</label><input type="number" id="edit-price" step="1" min="0"/></div>
+      <div class="fld"><label>Supplies Cost (GHS)</label><input type="number" id="edit-supplies" step="1" min="0"/></div>
+    </div>
+    <div class="fld" style="margin-bottom:18px">
+      <label>Status</label>
+      <select id="edit-status">
+        <option value="pending">Pending</option>
+        <option value="progress">In Progress</option>
+        <option value="done">Completed</option>
+        <option value="paid">Paid ✓</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" onclick="saveEdit()" style="flex:1">Save Changes</button>
+      <button class="btn btn-red" onclick="deleteOrder()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONFIGURATION — paste your Web App URL here after deploying
+// ══════════════════════════════════════════════════════
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzfNKEfJv7zS_OF6SfmMyppzLtDBc3Bs9Ewb5r4NwE_KySQNDWtQaESOY0FmPlRLltU/exec';
+// Example: 'https://script.google.com/macros/s/AKfycbx.../exec'
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CURRENT_MONTH = 'Jun';
+const CURRENT_MONTH_LABEL = 'June 2026';
+
+let ORDERS = [];
+let nextId = 1;
+let SETTINGS = { SPO: 20, AVG_ORDER: 115, OWNER_PAY: 800 };
+let FIXED_COSTS = [{ name: 'Electricity', amount: 200 }];
+let YEARLY = MONTHS.map(m => ({ m, revenue: 0, supplies: 0, fixedCosts: 200, actual: false, target: 1000 }));
+let _syncing = false;
+
+// ══════════════════════════════════════════════════════
+// SYNC ENGINE — Google Sheets via Apps Script Web App
+// ══════════════════════════════════════════════════════
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+async function apiFetch(action, payload = {}) {
+  if (!WEBAPP_URL || WEBAPP_URL.includes('YOUR_GOOGLE')) {
+    throw new Error('Web App URL not configured');
+  }
+  const body = JSON.stringify({ action, ...payload });
+  const res = await fetch(WEBAPP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' }, // Apps Script requires text/plain for POST
+    body
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return json;
+}
+
+async function syncAll() {
+  if (_syncing) return;
+  _syncing = true;
+  setSyncStatus('loading', 'Syncing…');
+  try {
+    const data = await apiFetch('getAll');
+    if (data.ORDERS) { ORDERS = data.ORDERS; nextId = (ORDERS.length ? Math.max(...ORDERS.map(o => o.id)) : 0) + 1; }
+    if (data.SETTINGS) SETTINGS = { ...SETTINGS, ...data.SETTINGS };
+    if (data.FIXED_COSTS) FIXED_COSTS = data.FIXED_COSTS;
+    if (data.YEARLY) YEARLY = data.YEARLY;
+    document.getElementById('o-cost').value = SETTINGS.SPO;
+    renderOv(); renderSettings(); renderOrders();
+    setSyncStatus('ok', 'Synced just now');
+  } catch (e) {
+    setSyncStatus('err', 'Sync failed');
+    if (e.message.includes('not configured')) {
+      setSyncStatus('', 'URL not set');
+    }
+  }
+  _syncing = false;
+}
+
+async function pushData(action, payload) {
+  setSyncStatus('loading', 'Saving…');
+  try {
+    await apiFetch(action, payload);
+    setSyncStatus('ok', 'Saved ✓');
+  } catch (e) {
+    setSyncStatus('err', 'Save failed — check connection');
+    console.error(e);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+const ghs = v => { const n = parseFloat(v)||0, a = Math.abs(n); const f = a.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); return n < 0 ? `(GHS ${f})` : `GHS ${f}`; };
+const pct = v => (parseFloat(v)*100).toFixed(1)+'%';
+const totalOH = () => FIXED_COSTS.reduce((s,c) => s+c.amount, 0);
+const avgCM = () => SETTINGS.AVG_ORDER - SETTINGS.SPO;
+const beO = fc => Math.ceil(fc / avgCM());
+const set = (id, html) => { const e=document.getElementById(id); if(e) e.innerHTML=html; };
+const val = id => document.getElementById(id) ? document.getElementById(id).value : '';
+
+function currentTarget() {
+  const idx = MONTHS.indexOf(CURRENT_MONTH);
+  return YEARLY[idx] ? YEARLY[idx].target : 1000;
+}
+
+function calcPL() {
+  const active = ORDERS.filter(o => o.status !== 'pending');
+  let rev = 0, cost = 0, units = 0;
+  active.forEach(o => { rev += o.price; cost += o.supplies; units++; });
+  const gp = rev - cost, oh = totalOH(), net = gp - oh;
+  const confirmed = ORDERS.filter(o => ['done','paid'].includes(o.status)).reduce((s,o) => s+o.price, 0);
+  const inprog = ORDERS.filter(o => o.status === 'progress').reduce((s,o) => s+o.price, 0);
+  return { rev, cost, gp, oh, net, units, confirmed, inprog };
+}
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+function go(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+  const fns = { overview:renderOv, yearly:renderYearly, calc:calcOrder, rtw:calcRTW, orders:renderOrders, breakeven:renderBE, settings:renderSettings };
+  (fns[id]||(() => {}))();
+  // Close mobile menu
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════════════════════
+function renderOv() {
+  const { rev, cost, gp, oh, net, units, confirmed, inprog } = calcPL();
+  const TARGET = currentTarget();
+  const tP = Math.min(1, Math.max(0, net / TARGET));
+  const avg = units > 0 ? rev / units : 0;
+
+  set('kpi-rev', ghs(rev));
+  const pe = document.getElementById('kpi-profit');
+  if (pe) { pe.textContent = ghs(net); pe.style.color = net >= 0 ? 'var(--green)' : 'var(--red)'; }
+  set('kpi-avg', units > 0 ? ghs(avg) : '—');
+  set('kpi-cost', ghs(cost));
+  set('kpi-cost-s', `GHS ${SETTINGS.SPO} × ${units} orders`);
+  set('hdr-orders', units + ' orders');
+  set('ft-orders', ORDERS.length + ' orders');
+  set('ft-rev', ghs(rev));
+  set('pl-title', `Monthly P&L — ${CURRENT_MONTH_LABEL}`);
+
+  let fcRows = '';
+  FIXED_COSTS.forEach(c => { fcRows += `<div class="sr"><span class="sl">${c.name}</span><span class="sv">(${ghs(c.amount)})</span></div>`; });
+
+  set('pl-body', `
+    <div class="sr"><span class="sl">Labour Revenue (${units} active orders)</span><span class="sv gold">${ghs(rev)}</span></div>
+    <div class="sr"><span class="sl">Supplies — GHS ${SETTINGS.SPO} × ${units} orders</span><span class="sv">(${ghs(cost)})</span></div>
+    <div class="sr"><span class="sl" style="color:var(--text);font-weight:600">Gross Profit</span><span class="sv" style="font-family:var(--fd);font-size:17px;color:${gp>=0?'var(--green)':'var(--red)'}">${ghs(gp)}</span></div>
+    <div style="height:4px"></div>
+    ${fcRows}
+    <div style="background:rgba(212,160,74,.07);border:1px solid var(--border2);padding:14px;margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-family:var(--fd);font-size:14px;font-weight:600;letter-spacing:.06em">NET PROFIT</span>
+      <span style="font-family:var(--fd);font-size:26px;font-weight:600;color:${net>=0?'var(--green)':'var(--red)'}">${ghs(net)}</span>
+    </div>
+    <div style="text-align:right;margin-top:5px;font-size:11px;color:var(--text3)">Net margin ${pct(rev>0?net/rev:0)} · ${units} active orders</div>
+  `);
+
+  set('tgt-num', `Target: ${ghs(TARGET)}`);
+  set('tgt-pct', Math.round(tP*100)+'%');
+  const bar = document.getElementById('tgt-bar');
+  if (bar) { bar.className = 'pb ' + (tP>=1?'green':tP<0.5?'red':''); setTimeout(() => { bar.style.width = (tP*100)+'%'; }, 80); }
+
+  set('tgt-rows', `
+    <div class="sr"><span class="sl">Current net profit</span><span class="sv ${net>=0?'green':'red'}">${ghs(net)}</span></div>
+    <div class="sr"><span class="sl">Target</span><span class="sv gold">${ghs(TARGET)}</span></div>
+    <div class="sr"><span class="sl">${net>=TARGET?'Surplus':'Shortfall'}</span><span class="sv ${net>=TARGET?'green':'red'}">${ghs(Math.abs(net-TARGET))}</span></div>
+  `);
+
+  const cm = avgCM(), more = Math.ceil(Math.max(0,(TARGET-net)/cm));
+  set('insights', `
+    <div class="sr"><span class="sl">Paid + completed</span><span class="sv green">${ghs(confirmed)}</span></div>
+    <div class="sr"><span class="sl">In progress</span><span class="sv amber">${ghs(inprog)}</span></div>
+    ${more > 0
+      ? `<div class="al gold" style="margin-top:12px;margin-bottom:0"><span>🎯</span><span style="font-size:12px">Need <strong>${more} more orders</strong> at average price to hit your ${ghs(TARGET)} target.</span></div>`
+      : `<div class="al green" style="margin-top:12px;margin-bottom:0"><span>✦</span><span style="font-size:12px">Target reached! Every new order is pure growth.</span></div>`}
+  `);
+
+  const gpM = rev>0?gp/rev:0, netM = rev>0?net/rev:0;
+  set('health', `
+    <div style="text-align:center;padding:8px 0 14px">
+      <div class="kl" style="margin-bottom:5px">Status</div>
+      <div style="font-family:var(--fd);font-size:24px;font-weight:600;color:${net>=TARGET?'var(--green)':net>=0?'var(--gold)':'var(--red)'}">${net>=TARGET?'On Target':net>=0?'Profitable':'Below Costs'}</div>
+    </div>
+    <div class="sr"><span class="sl">Gross margin</span><span class="sv ${gpM>=0.8?'green':'amber'}">${pct(gpM)}</span></div>
+    <div class="sr"><span class="sl">Net margin</span><span class="sv ${netM>0?'amber':'red'}">${pct(netM)}</span></div>
+    <div class="sr"><span class="sl">Total fixed costs</span><span class="sv gold">${ghs(oh)}/month</span></div>
+    <div class="sr"><span class="sl">Orders this month</span><span class="sv">${ORDERS.length}</span></div>
+  `);
+
+  let wif = '';
+  [5,8,10,12,15,20].forEach(n => {
+    const p = n*SETTINGS.AVG_ORDER - n*SETTINGS.SPO - oh - SETTINGS.OWNER_PAY;
+    wif += `<div class="sr"><span class="sl">${n} orders/month</span><span class="sv ${p>=TARGET?'green':p>=0?'amber':'red'}">${ghs(p)} ${p>=TARGET?'🎯':''}</span></div>`;
+  });
+  set('what-if', wif);
+}
+
+// ══════════════════════════════════════════════════════
+// YEARLY
+// ══════════════════════════════════════════════════════
+function renderYearly() {
+  const idx = MONTHS.indexOf(CURRENT_MONTH);
+  const { rev, cost } = calcPL();
+  if (ORDERS.length > 0) { YEARLY[idx].revenue = rev; YEARLY[idx].supplies = cost; YEARLY[idx].fixedCosts = totalOH(); YEARLY[idx].actual = true; }
+  const profits = YEARLY.map(m => m.revenue - m.supplies - m.fixedCosts);
+  const maxP = Math.max(...profits.map(Math.abs), 1);
+  let bars = '', ytdR = 0, ytdN = 0, bestM = '', bestV = -Infinity;
+  YEARLY.forEach((m, i) => {
+    const p = profits[i], h = Math.abs(p)/maxP*90;
+    const isNow = m.m === CURRENT_MONTH;
+    ytdR += m.revenue; ytdN += p;
+    if (p > bestV) { bestV = p; bestM = m.m; }
+    const col = p >= 0 ? (isNow ? 'var(--gold)' : 'var(--gold-s)') : 'var(--red-s)';
+    bars += `<div class="bar-col">
+      <div class="btt">${m.m}: ${ghs(p)}</div>
+      <div class="bar-val" style="color:${p>=0?'var(--gold)':'var(--red)'};font-size:9px">${p!==0?ghs(p):''}</div>
+      <div class="bar-rect" style="height:${h}%;background:${col}"></div>
+      <div class="bar-lbl" style="${isNow?'color:var(--gold)':''}">${m.m}</div>
+    </div>`;
+  });
+  set('yr-bars', bars);
+  set('yr-rev', ghs(ytdR));
+  set('yr-net', `<span style="color:${ytdN>=0?'var(--green)':'var(--red)'}">${ghs(ytdN)}</span>`);
+  set('yr-best', bestV > 0 ? `${bestM} <span style="font-size:14px;color:var(--text3)">${ghs(bestV)}</span>` : '—');
+  set('yr-chips', `<span class="chip c-gold">${MONTHS.slice(0,idx+1).filter((_,i)=>profits[i]>0).length} profitable months</span>`);
+}
+
+// ══════════════════════════════════════════════════════
+// ORDER CALCULATOR
+// ══════════════════════════════════════════════════════
+function calcOrder() {
+  const fabric = parseFloat(val('c-fabric'))||0;
+  const zip = parseFloat(val('c-zip'))||0;
+  const thread = parseFloat(val('c-thread'))||0;
+  const other = parseFloat(val('c-other'))||0;
+  const hours = parseFloat(val('c-hours'))||0;
+  const rate = parseFloat(val('c-rate'))||0;
+  const typeAdj = parseFloat(val('c-type'))||0;
+  const ohPct = (parseFloat(val('c-oh'))||0)/100;
+  const supplies = fabric + zip + thread + other;
+  const labour = hours * rate;
+  const base = supplies + labour;
+  const overhead = base * ohPct;
+  const totalCost = base + overhead + typeAdj;
+  const m30 = totalCost / 0.7, m40 = totalCost / 0.6, m50 = totalCost / 0.5;
+  if (totalCost === 0) { set('calc-res','<div class="empty">Fill in costs to see breakdown.</div>'); set('calc-price',''); return; }
+  set('calc-res', `
+    <div class="sr"><span class="sl">Fabric & Materials</span><span class="sv">${ghs(supplies)}</span></div>
+    <div class="sr"><span class="sl">Labour (${hours}h × GHS ${rate})</span><span class="sv">${ghs(labour)}</span></div>
+    <div class="sr"><span class="sl">Overhead (${(ohPct*100).toFixed(0)}%)</span><span class="sv">${ghs(overhead)}</span></div>
+    ${typeAdj !== 0 ? `<div class="sr"><span class="sl">Type adjustment</span><span class="sv ${typeAdj>0?'green':'red'}">${typeAdj>0?'+':''}${ghs(typeAdj)}</span></div>` : ''}
+    <div style="background:var(--gold-p);border:1px solid var(--border2);padding:12px;margin-top:10px;display:flex;justify-content:space-between">
+      <span style="font-family:var(--fd);font-size:13px;font-weight:600">Total Cost</span>
+      <span style="font-family:var(--fd);font-size:20px;color:var(--gold)">${ghs(totalCost)}</span>
+    </div>
+  `);
+  set('calc-price', `
+    <div class="sr"><span class="sl">30% margin → charge</span><span class="sv amber">${ghs(m30)}</span></div>
+    <div class="sr"><span class="sl">40% margin → charge</span><span class="sv gold">${ghs(m40)}</span></div>
+    <div class="sr"><span class="sl">50% margin → charge</span><span class="sv green">${ghs(m50)}</span></div>
+    <div class="al gold" style="margin-top:10px;margin-bottom:0"><span>✦</span><span style="font-size:11px">40% margin recommended for Accra quality market.</span></div>
+  `);
+}
+
+// ══════════════════════════════════════════════════════
+// READY-TO-WEAR
+// ══════════════════════════════════════════════════════
+function calcRTW() {
+  const fabric = parseFloat(val('r-fabric'))||0;
+  const labour = parseFloat(val('r-labour'))||0;
+  const supplies = parseFloat(val('r-supplies'))||0;
+  const pkg = parseFloat(val('r-pkg'))||0;
+  const delivery = parseFloat(val('r-delivery'))||0;
+  const margin = (parseFloat(val('r-margin'))||40)/100;
+  const batch = Math.max(1, parseInt(val('r-batch'))||10);
+  const comm = (parseFloat(val('r-comm'))||0)/100;
+  const costPer = fabric + labour + supplies + pkg + (delivery / batch);
+  const buffer = costPer * 0.1;
+  const totalCostPer = costPer + buffer;
+  const price = totalCostPer / (1 - margin - comm);
+  if (costPer === 0) { set('rtw-res','<div class="empty">Fill in costs to get your price.</div>'); return; }
+  const profitPer = price - totalCostPer;
+  const roiPct = ((profitPer / totalCostPer) * 100).toFixed(0);
+  set('rtw-res', `
+    <div style="text-align:center;margin-bottom:16px">
+      <div class="kl">Recommended Selling Price</div>
+      <div class="rtw-price">${ghs(price)}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">per dress · ${(margin*100).toFixed(0)}% margin</div>
+    </div>
+    <div class="sr"><span class="sl">Cost per dress</span><span class="sv">${ghs(costPer)}</span></div>
+    <div class="sr"><span class="sl">Unsold stock buffer (10%)</span><span class="sv">${ghs(buffer)}</span></div>
+    <div class="sr"><span class="sl">Profit per dress</span><span class="sv green">${ghs(profitPer)}</span></div>
+    <div class="sr"><span class="sl">Batch of ${batch} revenue</span><span class="sv gold">${ghs(price * batch)}</span></div>
+    <div class="sr"><span class="sl">Batch profit</span><span class="sv green">${ghs(profitPer * batch)}</span></div>
+    <div class="sr"><span class="sl">ROI</span><span class="sv gold">${roiPct}%</span></div>
+  `);
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════
+function renderSettings() {
+  document.getElementById('s-spo').value = SETTINGS.SPO;
+  document.getElementById('s-avg').value = SETTINGS.AVG_ORDER;
+  document.getElementById('s-pay').value = SETTINGS.OWNER_PAY;
+  renderFixedCosts();
+  renderMonthlyTargets();
+}
+
+function renderFixedCosts() {
+  const total = totalOH();
+  let html = '';
+  FIXED_COSTS.forEach((c, i) => {
+    html += `<div class="sr">
+      <span class="sl">${c.name}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="sv gold">${ghs(c.amount)}/mo</span>
+        <button class="btn btn-red btn-sm" onclick="removeFixedCost(${i})">✕</button>
+      </div>
+    </div>`;
+  });
+  set('fc-list', html || '<div class="empty" style="padding:16px;font-size:13px">No fixed costs added yet.</div>');
+  set('fc-total', ghs(total));
+}
+
+function addFixedCost() {
+  const name = document.getElementById('fc-name').value.trim();
+  const amount = parseFloat(document.getElementById('fc-amt').value)||0;
+  if (!name || !amount) return;
+  FIXED_COSTS.push({ name, amount });
+  document.getElementById('fc-name').value = '';
+  document.getElementById('fc-amt').value = '';
+  renderFixedCosts();
+  renderOv(); renderBE();
+  pushData('saveSettings', { SETTINGS, FIXED_COSTS, YEARLY });
+}
+
+function removeFixedCost(i) {
+  if (!confirm('Remove this cost?')) return;
+  FIXED_COSTS.splice(i, 1);
+  renderFixedCosts();
+  renderOv(); renderBE();
+  pushData('saveSettings', { SETTINGS, FIXED_COSTS, YEARLY });
+}
+
+function saveSetting(key, value) {
+  SETTINGS[key] = parseFloat(value)||0;
+  renderOv(); renderBE();
+  pushData('saveSettings', { SETTINGS, FIXED_COSTS, YEARLY });
+}
+
+function renderMonthlyTargets() {
+  let html = '';
+  YEARLY.forEach((m, i) => {
+    html += `<div class="mt-cell">
+      <label>${m.m}</label>
+      <input type="number" step="100" value="${m.target}" id="mt-${i}"/>
+    </div>`;
+  });
+  set('monthly-targets-grid', html);
+}
+
+function saveMonthlyTargets() {
+  YEARLY.forEach((m, i) => {
+    const v = parseFloat(document.getElementById('mt-'+i)?.value)||0;
+    m.target = v;
+  });
+  const btn = document.getElementById('save-targets-btn');
+  btn.textContent = 'Saving…';
+  pushData('saveSettings', { SETTINGS, FIXED_COSTS, YEARLY }).then(() => {
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.textContent = 'Save All Targets'; }, 2000);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// ORDER LOG
+// ══════════════════════════════════════════════════════
+async function addOrder() {
+  const name = document.getElementById('o-name').value.trim();
+  const type = val('o-type');
+  const price = parseFloat(val('o-price'))||0;
+  const supplies = parseFloat(val('o-cost'))||SETTINGS.SPO;
+  const status = val('o-status');
+  if (!name || !price) { alert('Enter client name and charge.'); return; }
+  const btn = document.getElementById('add-order-btn');
+  btn.textContent = 'Saving…';
+  const order = { id: nextId++, client: name, type, price, supplies, status, date: new Date().toISOString().slice(0,10) };
+  ORDERS.unshift(order);
+  document.getElementById('o-name').value = '';
+  document.getElementById('o-price').value = '';
+  renderOrders();
+  renderOv();
+  await pushData('addOrder', { order });
+  btn.textContent = '+ Add Order';
+}
+
+function renderOrders() {
+  const tmap = {
+    pending: `<span class="tag t-pend">Pending</span>`,
+    progress: `<span class="tag t-prog">In Progress</span>`,
+    done: `<span class="tag t-done">Completed</span>`,
+    paid: `<span class="tag t-paid">Paid ✓</span>`
+  };
+  const empty = document.getElementById('ord-empty');
+  if (!ORDERS.length) {
+    if (empty) empty.style.display = 'block';
+    set('ord-body',''); set('ord-foot',''); set('ord-sub','No orders yet'); set('ord-chips',''); return;
+  }
+  if (empty) empty.style.display = 'none';
+  let tR=0, tC=0, tP=0;
+  const rows = ORDERS.map(o => {
+    const p = o.price - o.supplies;
+    if (o.status !== 'pending') { tR += o.price; tC += o.supplies; tP += p; }
+    return `<tr>
+      <td style="color:var(--text3);font-size:11px">${o.id}</td>
+      <td style="font-weight:500">${o.client}</td>
+      <td style="color:var(--text3);font-size:12px">${o.type}</td>
+      <td style="text-align:right;font-family:var(--fd);font-size:15px;color:var(--gold)">${ghs(o.price)}</td>
+      <td style="text-align:right;color:var(--text3)">${ghs(o.supplies)}</td>
+      <td style="text-align:right;font-weight:700;color:${p>=0?'var(--green)':'var(--red)'}">${ghs(p)}</td>
+      <td>${tmap[o.status]||''}</td>
+      <td style="font-size:11px;color:var(--text3)">${o.date.slice(5).replace('-','/')}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openEdit(${o.id})">Edit</button></td>
+    </tr>`;
+  }).join('');
+  set('ord-body', rows);
+  set('ord-foot', `<tr><td colspan="3" style="font-family:var(--fd);font-size:14px">Totals</td><td style="text-align:right;color:var(--gold);font-family:var(--fd);font-size:15px">${ghs(tR)}</td><td style="text-align:right">(${ghs(tC)})</td><td style="text-align:right;font-weight:800;font-size:14px;color:${tP>=0?'var(--green)':'var(--red)'}">${ghs(tP)}</td><td colspan="3"></td></tr>`);
+  set('ord-sub', `${ORDERS.length} orders this month`);
+  const c = { pending:0, progress:0, done:0, paid:0 };
+  ORDERS.forEach(o => c[o.status] = (c[o.status]||0)+1);
+  set('ord-chips', `<span class="chip c-gold">${c.progress||0} in progress</span><span class="chip c-green">${c.paid||0} paid</span><span class="chip c-muted">${c.pending||0} pending</span>`);
+}
+
+function openEdit(id) {
+  const o = ORDERS.find(x => x.id === id);
+  if (!o) return;
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-client').value = o.client;
+  document.getElementById('edit-type').value = o.type;
+  document.getElementById('edit-price').value = o.price;
+  document.getElementById('edit-supplies').value = o.supplies;
+  document.getElementById('edit-status').value = o.status;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEdit() { document.getElementById('edit-modal').classList.remove('open'); }
+
+async function saveEdit() {
+  const id = parseInt(document.getElementById('edit-id').value);
+  const o = ORDERS.find(x => x.id === id);
+  if (!o) return;
+  o.client = document.getElementById('edit-client').value.trim();
+  o.type = document.getElementById('edit-type').value;
+  o.price = parseFloat(document.getElementById('edit-price').value)||0;
+  o.supplies = parseFloat(document.getElementById('edit-supplies').value)||0;
+  o.status = document.getElementById('edit-status').value;
+  closeEdit();
+  renderOrders();
+  renderOv();
+  await pushData('updateOrder', { order: o });
+}
+
+async function deleteOrder() {
+  const id = parseInt(document.getElementById('edit-id').value);
+  if (!confirm('Delete this order?')) return;
+  ORDERS = ORDERS.filter(x => x.id !== id);
+  closeEdit();
+  renderOrders();
+  renderOv();
+  await pushData('deleteOrder', { id });
+}
+
+// ══════════════════════════════════════════════════════
+// BREAK-EVEN
+// ══════════════════════════════════════════════════════
+function renderBE() {
+  const oh = totalOH(), cm = avgCM(), TARGET = currentTarget();
+  set('be1', beO(oh));
+  set('be2', beO(oh + SETTINGS.OWNER_PAY));
+  set('be3', Math.ceil((oh + SETTINGS.OWNER_PAY + TARGET) / cm));
+  set('be2-u', `orders/month · incl. GHS ${SETTINGS.OWNER_PAY} pay target`);
+  set('be3-u', `orders/month · target ${ghs(TARGET)}`);
+  let fcList = '';
+  FIXED_COSTS.forEach(c => { fcList += `<div class="sr"><span class="sl">${c.name}</span><span class="sv gold">${ghs(c.amount)}/mo</span></div>`; });
+  set('be-costs', `
+    ${fcList}
+    <div class="sr"><span class="sl">Total fixed costs</span><span class="sv gold">${ghs(oh)}/month</span></div>
+    <div class="sr"><span class="sl">Supplies per order</span><span class="sv">${ghs(SETTINGS.SPO)}</span></div>
+    <div class="sr"><span class="sl">Avg contribution per order</span><span class="sv gold">${ghs(cm)}</span></div>
+    <div class="sr"><span class="sl">Owner pay target</span><span class="sv">${ghs(SETTINGS.OWNER_PAY)}/month</span></div>
+    <div class="al green" style="margin-top:14px;margin-bottom:0"><span>✦</span><span style="font-size:12px">Update Fixed Costs in Settings whenever costs change. Break-even recalculates instantly.</span></div>
+  `);
+  let g = '';
+  [5,8,10,12,15,20].forEach(n => {
+    const p = n*SETTINGS.AVG_ORDER - n*SETTINGS.SPO - oh - SETTINGS.OWNER_PAY;
+    g += `<div class="sr"><span class="sl">${n} orders/month</span><span class="sv ${p>=TARGET?'green':p>=0?'amber':'red'}">${ghs(p)} net ${p>=TARGET?'🎯':''}</span></div>`;
+  });
+  set('be-growth', g);
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('o-cost').value = SETTINGS.SPO;
+  renderOv();
+  calcRTW();
+  calcOrder();
+  // Try to sync from Google Sheets
+  await syncAll();
+  document.getElementById('loading').classList.add('hidden');
+  renderOv();
+});
+
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEdit();
+});
+</script>
+</body>
+</html>
